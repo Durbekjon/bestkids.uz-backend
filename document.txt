@@ -28,7 +28,7 @@
     avatar
     phone_number
     password
-    type: user, teacher, admin
+    Role: user, teacher, admin
 
 3) Programs
     Name
