@@ -22,7 +22,6 @@
     about_description
     advantages
 
-    weekly
 
 2) User
     avatar
