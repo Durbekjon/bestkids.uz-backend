@@ -2,11 +2,14 @@ import express from 'express'
 import upload from '../middleware/multer.js'
 import Image from '../models/Image.js'
 import Memory from '../models/Memory.js'
+import authMiddleware from '../middleware/authMiddleware.js'
 import fs from 'fs'
+import adminMiddleware from '../middleware/adminMiddleware.js'
 const router = express.Router()
 
 router.post(
     '/upload-user-img',
+    authMiddleware,
     upload('user-images').single('image'),
     async (req, res) => {
         try {
@@ -32,6 +35,7 @@ router.post(
 )
 router.post(
     '/upload-site-img',
+    adminMiddleware,
     upload('site-images').single('image'),
     async (req, res) => {
         try {
