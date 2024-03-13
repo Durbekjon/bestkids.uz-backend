@@ -1,9 +1,9 @@
 import express from 'express'
-import upload from '../middleware/multer.js'
+import s3 from '../utils/aws-s3.js'
 import Image from '../models/Image.js'
 import Memory from '../models/Memory.js'
+import upload from '../middleware/multer.js'
 import authMiddleware from '../middleware/authMiddleware.js'
-import fs from 'fs'
 import adminMiddleware from '../middleware/adminMiddleware.js'
 const router = express.Router()
 
@@ -13,14 +13,16 @@ router.post(
     upload('user-images').single('image'),
     async (req, res) => {
         try {
-            const { filename, size } = req.file
-
-            const newImg = new Image({ name: filename, size })
-            await incMemory(newImg.size)
-            await newImg.save()
-
-            return res.status(201).json({
-                message: 'Image uploaded successfully',
+            const { size, bucket, key, location } = req.file
+            const newImg = await new Image({
+                size,
+                bucket,
+                key,
+                location,
+            }).save()
+            await incMemory(size)
+            res.status(201).json({
+                message: 'Img uploaded Successfully',
                 data: newImg,
                 success: true,
             })
@@ -39,13 +41,16 @@ router.post(
     upload('site-images').single('image'),
     async (req, res) => {
         try {
-            const { filename, size } = req.file
-            const newImg = new Image({ name: filename, size })
-            await incMemory(newImg.size)
-            await newImg.save()
-
-            return res.status(201).json({
-                message: 'Image uploaded successfully',
+            const { size, bucket, key, location } = req.file
+            const newImg = await new Image({
+                size,
+                bucket,
+                key,
+                location,
+            }).save()
+            await incMemory(size)
+            res.status(201).json({
+                message: 'Img uploaded Successfully',
                 data: newImg,
                 success: true,
             })
@@ -60,24 +65,33 @@ router.post(
 )
 router.delete('/delete/:id', async (req, res) => {
     try {
-        const img = await Image.findById(req.params.id)
+        const id = req.params.id
+        const image = await Image.findById(id)
 
-        if (!img) {
+        if (!image) {
             return res.status(404).json({
                 message: 'Image not found',
                 success: false,
             })
         }
 
-        fs.unlinkSync(`./uploads/${img.name}`)
+        const params = {
+            Bucket: image.bucket,
+            Key: image.key,
+        }
+        await decMemory(image.size)
+        await Image.findByIdAndDelete(req.params.id)
+        await s3.deleteObject(params, (err, data) => {
+            if (err) {
+                return res
+                    .status(500)
+                    .json({ message: err.message, success: false })
+            }
 
-        await decMemory(img.size)
-
-        await Image.findByIdAndDelete(img.id)
-
-        return res.status(200).json({
-            message: 'Image deleted successfully',
-            success: true,
+            res.status(200).json({
+                message: 'Image deleted successfully',
+                success: true,
+            })
         })
     } catch (error) {
         return res.status(500).json({

@@ -7,9 +7,16 @@ const image = new Schema({
         type: Number,
         required: true,
     },
-    name: {
+    bucket: {
         type: String,
-        unique: true,
+        required: true,
+    },
+    key: {
+        type: String,
+        required: true,
+    },
+    location: {
+        type: String,
         required: true,
     },
     // created_at:{
