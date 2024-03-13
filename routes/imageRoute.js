@@ -1,29 +1,55 @@
+import fs from 'fs'
 import express from 'express'
-import upload from '../middleware/multer.js'
 import Image from '../models/Image.js'
 import Memory from '../models/Memory.js'
+import upload from '../middleware/multer.js'
+import cloudinary from '../utils/cloudinary.js'
 import authMiddleware from '../middleware/authMiddleware.js'
-import fs from 'fs'
 import adminMiddleware from '../middleware/adminMiddleware.js'
+
 const router = express.Router()
 
 router.post(
     '/upload-user-img',
     authMiddleware,
-    upload('user-images').single('image'),
+    upload.single('image'),
     async (req, res) => {
         try {
-            const { filename, size } = req.file
+            if (!req.file) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No file uploaded',
+                })
+            }
 
-            const newImg = new Image({ name: filename, size })
-            await incMemory(newImg.size)
-            await newImg.save()
 
-            return res.status(201).json({
-                message: 'Image uploaded successfully',
-                data: newImg,
-                success: true,
-            })
+            cloudinary.uploader.upload(
+                req.file.path,
+                { folder: 'user-images' },
+                async (err, result) => {
+                    if (err) {
+                        console.log(err)
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Error uploading to Cloudinary',
+                        })
+                    }
+
+                    const newImg = new Image({
+                        size: req.file.size,
+                        url: result.secure_url,
+                        public_id: result.public_id,
+                    })
+                    await incMemory(req.file.size)
+                    await newImg.save()
+
+                    return res.status(201).json({
+                        message: 'Image uploaded successfully',
+                        data: newImg,
+                        success: true,
+                    })
+                },
+            )
         } catch (error) {
             console.log(error)
             return res.status(500).json({
@@ -33,22 +59,47 @@ router.post(
         }
     },
 )
+
 router.post(
     '/upload-site-img',
     adminMiddleware,
-    upload('site-images').single('image'),
+    upload.single('image'),
     async (req, res) => {
         try {
-            const { filename, size } = req.file
-            const newImg = new Image({ name: filename, size })
-            await incMemory(newImg.size)
-            await newImg.save()
+            if (!req.file) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No file uploaded',
+                })
+            }
 
-            return res.status(201).json({
-                message: 'Image uploaded successfully',
-                data: newImg,
-                success: true,
-            })
+            cloudinary.uploader.upload(
+                req.file.path,
+                { folder: 'site-images' },
+                async (err, result) => {
+                    if (err) {
+                        console.log(err)
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Error uploading to Cloudinary',
+                        })
+                    }
+
+                    const newImg = new Image({
+                        size: req.file.size,
+                        url: result.secure_url,
+                        public_id: result.public_id,
+                    })
+                    await incMemory(req.file.size)
+                    await newImg.save()
+
+                    return res.status(201).json({
+                        message: 'Image uploaded successfully',
+                        data: newImg,
+                        success: true,
+                    })
+                },
+            )
         } catch (error) {
             console.log(error)
             return res.status(500).json({
@@ -58,6 +109,7 @@ router.post(
         }
     },
 )
+
 router.delete('/delete/:id', async (req, res) => {
     try {
         const img = await Image.findById(req.params.id)
@@ -69,7 +121,7 @@ router.delete('/delete/:id', async (req, res) => {
             })
         }
 
-        fs.unlinkSync(`./uploads/${img.name}`)
+        await cloudinary.uploader.destroy(img.public_id)
 
         await decMemory(img.size)
 
@@ -103,7 +155,7 @@ router.get('/total-memory-size', async (req, res) => {
                 ? `${total_mem_gb} GB`
                 : `${total_mem_mb} MB`
 
-        const imagesCount = await Image.countDocuments() // Await countDocuments()
+        const imagesCount = await Image.countDocuments()
 
         return res.status(200).json({
             totalMemory: result,

@@ -7,14 +7,14 @@ const image = new Schema({
         type: Number,
         required: true,
     },
-    name: {
+    public_id: {
         type: String,
-        unique: true,
         required: true,
     },
-    // created_at:{
-    //     default: Date.now()
-    // }
+    url: {
+        type: String,
+        required: true,
+    },
 })
 
 const Image = mongoose.model('Image', image)
