@@ -13,10 +13,12 @@ app.use(express.urlencoded({ extended: true }))
 import authRouter from './routes/authRoute.js'
 import imageRouter from './routes/imageRoute.js'
 import classRouter from './routes/classesRoute.js'
+import courseRouter from './routes/courseRoute.js'
 import categoryRouter from './routes/categoryRoute.js'
 
 app.use('/api/auth', authRouter)
 app.use('/api/image', imageRouter)
+app.use('/api/course', courseRouter)
 app.use('/api/classes', classRouter)
 app.use('/api/category', categoryRouter)
 

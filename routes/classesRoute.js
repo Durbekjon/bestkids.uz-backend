@@ -4,24 +4,6 @@ import Classes from '../models/Classes.js'
 
 const router = express.Router()
 
-router.post('/', adminMiddleware, async (req, res) => {
-    try {
-        const { icon, name, description } = req.body
-        const newClasses = await new Classes({ icon, name, description }).save()
-
-        return res.status(201).json({
-            message: 'Class created Successfully',
-            data: newClasses,
-            success: true,
-        })
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: `Internal server error:${error}`,
-        })
-    }
-})
-
 router.get('/', async (req, res) => {
     try {
         const classes = await Classes.find()

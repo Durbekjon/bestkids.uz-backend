@@ -3,6 +3,11 @@ import mongoose from 'mongoose'
 const Schema = mongoose.Schema
 
 const course = new Schema({
+    class_id: {
+        type: String,
+        required: true,
+        unique: true,
+    },
     class_img: {
         type: mongoose.Types.ObjectId,
         ref: 'Image',
@@ -60,7 +65,9 @@ const course = new Schema({
     },
     advantages: [
         {
-            type: String,
+            advantage: {
+                type: String,
+            },
         },
     ],
 })
