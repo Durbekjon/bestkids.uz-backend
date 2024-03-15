@@ -12,9 +12,10 @@ const image = new Schema({
         unique: true,
         required: true,
     },
-    // created_at:{
-    //     default: Date.now()
-    // }
+    created_at: {
+        type: Date,
+        default: Date.now(),
+    },
 })
 
 const Image = mongoose.model('Image', image)
