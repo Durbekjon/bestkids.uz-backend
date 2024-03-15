@@ -10,8 +10,13 @@ const image = new Schema({
     name: {
         type: String,
         unique: true,
-        required: true,
     },
+    for: {
+        type: String,
+        enum: ['phone', 'category', 'user', 'noactive'],
+        default: 'noactive',
+    },
+
     created_at: {
         type: Date,
         default: Date.now(),

@@ -54,6 +54,24 @@ router.post(
     },
 )
 
+router.get('/no-active-images', adminMiddleware, async (req, res) => {
+    try {
+        const images = await Image.find({ for: 'noactive' })
+
+        return res.status(200).json({
+            message: 'No active images',
+            data: images,
+            success: true,
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            message: 'Internal server error',
+            success: false,
+        })
+    }
+})
+
 router.delete('/delete-many', authMiddleware, async (req, res) => {
     try {
         const imagesId = req.body.images
