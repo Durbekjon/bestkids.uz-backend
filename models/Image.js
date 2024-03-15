@@ -3,20 +3,32 @@ import mongoose from 'mongoose'
 const Schema = mongoose.Schema
 
 const image = new Schema({
-    size: {
-        type: Number,
-        required: true,
-    },
+    // upload server
     name: {
         type: String,
-        unique: true,
+        required: true,
     },
+
+    // aws
+    bucket: {
+        type: String,
+    },
+    key: {
+        type: String,
+    },
+    location: {
+        type: String,
+    },
+
     for: {
         type: String,
         enum: ['phone', 'category', 'user', 'noactive'],
         default: 'noactive',
     },
-
+    size: {
+        type: Number,
+        required: true,
+    },
     created_at: {
         type: Date,
         default: Date.now(),
