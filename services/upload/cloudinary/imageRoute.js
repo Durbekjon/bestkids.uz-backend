@@ -1,11 +1,13 @@
-import adminMiddleware from '../middleware/adminMiddleware.js'
-import authMiddleware from '../middleware/authMiddleware.js'
-import upload from '../middleware/multer.js'
-import Memory from '../models/Memory.js'
-import Image from '../models/Image.js'
 import express from 'express'
-import fs from 'fs'
+import Image from '../../../models/Image.js'
+import Memory from '../../../models/Memory.js'
+import upload from './multer.js'
+import authMiddleware from '../../../middleware/authMiddleware.js'
+import adminMiddleware from '../../../middleware/adminMiddleware.js'
+import cloudinary from './cloudinary.js'
+// import adminMiddleware from '../../../middleware/adminMiddleware.js'
 const router = express.Router()
+
 router.post(
     '/upload/:folder',
     authMiddleware,
@@ -17,7 +19,8 @@ router.post(
             upload(folder).array('image', 10)(req, res, next)
         }
     },
-    async (req, res) => {
+    async (req, res, next) => {
+        const folder = req.params.folder
         try {
             const files = req.files
             if (!files || files.length === 0) {
@@ -26,20 +29,48 @@ router.post(
                     success: false,
                 })
             }
+
             const uploadedImages = []
 
-            for (const file of files) {
-                const { filename, size } = file
+            await Promise.all(
+                files.map(async (file) => {
+                    try {
+                        const result = await cloudinary.uploader.upload(
+                            file.path,
+                            {
+                                folder,
+                            },
+                        )
 
-                const newImg = new Image({ name: filename, size })
-                await incMemory(newImg.size)
-                await newImg.save()
+                        const { size } = file
 
-                uploadedImages.push(newImg)
-            }
+                        const uniqueSuffix =
+                            Date.now() + '-' + Math.round(Math.random() * 1e9)
 
-            return res.status(201).json({
-                message: 'Images uploaded successfully',
+                        const name =
+                            uniqueSuffix + '.' + file.mimetype.split('/')[1]
+
+                        const newImg = new Image({
+                            name,
+                            url: result.secure_url,
+                            public_id: result.public_id,
+                            size: file.size,
+                        })
+                        await newImg.save()
+                        await incMemory(size)
+                        uploadedImages.push(newImg)
+                    } catch (err) {
+                        console.log(err)
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Error uploading to Cloudinary',
+                        })
+                    }
+                }),
+            )
+
+            res.status(201).json({
+                message: 'Images uploaded Successfully',
                 data: uploadedImages,
                 success: true,
             })
@@ -53,25 +84,7 @@ router.post(
     },
 )
 
-router.get('/no-active-images', adminMiddleware, async (req, res) => {
-    try {
-        const images = await Image.find({ for: 'noactive' })
-
-        return res.status(200).json({
-            message: 'No active images',
-            data: images,
-            success: true,
-        })
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: 'Internal server error',
-            success: false,
-        })
-    }
-})
-
-router.delete('/delete-many', authMiddleware, async (req, res) => {
+router.delete('/delete-many', adminMiddleware, async (req, res) => {
     try {
         const imagesId = req.body.images
 
@@ -87,16 +100,15 @@ router.delete('/delete-many', authMiddleware, async (req, res) => {
 
         for (const id of imagesId) {
             const image = await Image.findById(id)
-
             if (!image) {
                 notFoundImages.push(id)
                 continue
             }
 
-            incMemory(image.size)
-            fs.unlinkSync(`./uploads/${image.name}`)
-            await Image.findOneAndDelete(id)
+            decMemory(image.size)
 
+            await cloudinary.uploader.destroy(image.public_id)
+            await Image.findByIdAndDelete(id)
             deletedImages.push(id)
         }
 
@@ -121,26 +133,35 @@ router.delete('/delete-many', authMiddleware, async (req, res) => {
     }
 })
 
-router.delete('/delete/:id', authMiddleware, async (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
     try {
-        const img = await Image.findById(req.params.id)
+        const id = req.params.id
+        const image = await Image.findById(id)
 
-        if (!img) {
+        if (!image) {
             return res.status(404).json({
                 message: 'Image not found',
                 success: false,
             })
         }
 
-        fs.unlinkSync(`./uploads/${img.name}`)
+        const params = {
+            Bucket: image.bucket,
+            Key: image.key,
+        }
+        await decMemory(image.size)
+        await Image.findByIdAndDelete(req.params.id)
+        await s3.deleteObject(params, (err, data) => {
+            if (err) {
+                return res
+                    .status(500)
+                    .json({ message: err.message, success: false })
+            }
 
-        await decMemory(img.size)
-
-        await Image.findByIdAndDelete(img.id)
-
-        return res.status(200).json({
-            message: 'Image deleted successfully',
-            success: true,
+            res.status(200).json({
+                message: 'Image deleted successfully',
+                success: true,
+            })
         })
     } catch (error) {
         return res.status(500).json({
@@ -166,7 +187,7 @@ router.get('/total-memory-size', async (req, res) => {
                 ? `${total_mem_gb} GB`
                 : `${total_mem_mb} MB`
 
-        const imagesCount = await Image.countDocuments()
+        const imagesCount = await Image.countDocuments() // Await countDocuments()
 
         return res.status(200).json({
             totalMemory: result,

@@ -20,6 +20,16 @@ const image = new Schema({
         type: String,
     },
 
+    // cloudinary
+
+    url: {
+        type: String,
+    },
+
+    public_id: {
+        type: String,
+    },
+
     for: {
         type: String,
         enum: ['phone', 'category', 'user', 'noactive'],
