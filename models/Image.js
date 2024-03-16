@@ -32,7 +32,7 @@ const image = new Schema({
 
     for: {
         type: String,
-        enum: ['phone', 'category', 'user', 'noactive'],
+        enum: ['team', 'category', 'user', 'noactive'],
         default: 'noactive',
     },
     size: {
