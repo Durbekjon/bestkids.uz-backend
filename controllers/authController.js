@@ -1,11 +1,12 @@
 import User from '../models/User.js'
+import Image from '../models/Image.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const register = async (req, res) => {
     try {
-        let { phone_number, password } = req.body
-        let user = await User.findOne({ phone_number })
+        let { name, phone, email, password, social, image } = req.body
+        let user = await User.findOne({ phone })
         if (user) {
             return res.status(403).json({
                 message: 'Access denied: User already registered',
@@ -14,7 +15,7 @@ const register = async (req, res) => {
         }
         // Hash the password correctly
         password = await bcrypt.hash(password, 10)
-        user = new User({ phone_number, password })
+        user = new User({ name, phone, email, password, social, image })
         await user.save()
         const token = jwt.sign(
             { userId: user.id, role: user.role },
@@ -24,12 +25,21 @@ const register = async (req, res) => {
             },
         )
 
-        return res.status(200).json({
+        const response = {
             message: 'User registered successfully',
-            data: user,
+            data: {
+                id: user.id,
+                phone: user.phone,
+                email: user.email,
+                social: user.social,
+            },
             token,
             success: true,
-        })
+        }
+
+        await Image.findByIdAndUpdate(image, { for: 'user' })
+
+        return res.status(200).json(response)
     } catch (error) {
         console.log(error)
         return res.status(500).json({
@@ -38,10 +48,20 @@ const register = async (req, res) => {
         })
     }
 }
+
 const login = async (req, res) => {
     try {
-        const { phone_number, password } = req.body
-        const user = await User.findOne({ phone_number })
+        const { phone, email, password } = req.body
+
+        if (!phone || !email || !password) {
+            return res.status(400).json({
+                message: 'Phone, email, and password are required',
+                success: false,
+            })
+        }
+
+        const user =
+            (await User.findOne({ phone })) || (await User.findOne({ email }))
 
         if (!user) {
             return res.status(404).json({
@@ -65,13 +85,20 @@ const login = async (req, res) => {
                 expiresIn: '1d',
             },
         )
-
-        return res.status(200).json({
+        console.log(user)
+        const response = {
             message: 'User logged in successfully',
-            data: user,
+            data: {
+                id: user.id,
+                phone: user.phone,
+                email: user.email,
+                social: user.social,
+            },
             token,
             success: true,
-        })
+        }
+
+        return res.status(200).json(response)
     } catch (error) {
         console.log(error)
         return res.status(500).json({

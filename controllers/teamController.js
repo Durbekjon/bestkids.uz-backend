@@ -1,13 +1,18 @@
-import Image from '../models/Image.js'
 import Team from '../models/Team.js'
 
 const create = async (req, res) => {
     try {
-        const { img, name, role, social } = req.body
-        const newTeamMember = new Team({ img, name, role, social })
-        const savedTeamMember = await newTeamMember.save()
+        const { user, role } = req.body
 
-        await Image.findByIdAndUpdate(img, { for: 'team' })
+        if (!user || !role) {
+            return res.status(400).json({
+                message: 'User and role are required fields',
+                success: false,
+            })
+        }
+
+        const newTeamMember = new Team({ user, role })
+        const savedTeamMember = await newTeamMember.save()
 
         return res.status(201).json({
             message: 'New team member created successfully',
@@ -25,7 +30,10 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const team = await Team.find().populate('img')
+        const team = await Team.find()
+            .populate('user', 'name social image')
+            .exec()
+
         return res.status(200).json({
             message: 'Team members retrieved successfully',
             data: team,
@@ -42,7 +50,16 @@ const getAll = async (req, res) => {
 
 const getOne = async (req, res) => {
     try {
-        const member = await Team.findById(req.params.id)
+        const memberId = req.params.id
+
+        if (!memberId) {
+            return res.status(400).json({
+                message: 'Member ID is required',
+                success: false,
+            })
+        }
+
+        const member = await Team.findById(memberId).populate('user').exec()
 
         if (!member) {
             return res.status(404).json({
@@ -67,31 +84,32 @@ const getOne = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const id = req.params.id
-        const { img, name, role, social } = req.body
-        let member = await Team.findById(id)
+        const memberId = req.params.id
+        const { user, role } = req.body
 
-        if (!member) {
+        if (!memberId || !user || !role) {
+            return res.status(400).json({
+                message: 'Member ID, user, and role are required fields',
+                success: false,
+            })
+        }
+
+        const updatedMember = await Team.findByIdAndUpdate(
+            memberId,
+            { user, role },
+            { new: true },
+        )
+
+        if (!updatedMember) {
             return res.status(404).json({
                 message: 'Member not found',
                 success: false,
             })
         }
 
-        if (img !== member.img) {
-            await Image.findByIdAndUpdate(member.img, { for: 'noactive' })
-            await Image.findByIdAndUpdate(img, { for: 'team' })
-        }
-
-        member = await Team.findByIdAndUpdate(
-            id,
-            { img, name, role, social },
-            { new: true },
-        )
-
         return res.status(200).json({
             message: 'Member updated successfully',
-            data: member,
+            data: updatedMember,
             success: true,
         })
     } catch (error) {
@@ -105,18 +123,23 @@ const update = async (req, res) => {
 
 const deleteMember = async (req, res) => {
     try {
-        const id = req.params.id
-        const member = await Team.findById(id)
+        const memberId = req.params.id
 
-        if (!member) {
+        if (!memberId) {
+            return res.status(400).json({
+                message: 'Member ID is required',
+                success: false,
+            })
+        }
+
+        const deletedMember = await Team.findByIdAndDelete(memberId)
+
+        if (!deletedMember) {
             return res.status(404).json({
                 message: 'Member not found',
                 success: false,
             })
         }
-
-        await Image.findByIdAndUpdate(member.img, { for: 'noactive' })
-        await Team.findByIdAndDelete(id)
 
         return res.status(200).json({
             message: 'Member deleted successfully',

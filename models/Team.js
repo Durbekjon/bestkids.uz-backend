@@ -3,28 +3,13 @@ import mongoose from 'mongoose'
 const Schema = mongoose.Schema
 
 const teamSchema = new Schema({
-    img: {
+    user: {
         type: mongoose.Types.ObjectId,
-        required: true,
-    },
-    name: {
-        type: String,
-        required: true,
+        ref: 'User',
     },
     role: {
         type: String,
         required: true,
-    },
-    social: {
-        telegram: {
-            type: String,
-        },
-        instagram: {
-            type: String,
-        },
-        facebook: {
-            type: String,
-        },
     },
 })
 
