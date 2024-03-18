@@ -1,8 +1,13 @@
+import { incMemory, decMemory } from './memoryController.js'
 import Memory from '../models/Memory.js'
 import Image from '../models/Image.js'
 import fs from 'fs'
-
-
+import {
+    created,
+    deleted,
+    errorHandler,
+    notFound,
+} from './responsController.js'
 const upload = async (req, res) => {
     try {
         const files = req.files
@@ -24,17 +29,9 @@ const upload = async (req, res) => {
             uploadedImages.push(newImg)
         }
 
-        return res.status(201).json({
-            message: 'Images uploaded successfully',
-            data: uploadedImages,
-            success: true,
-        })
+        return created(res, 'Image', uploadedImages)
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 const noActiveImages = async (req, res) => {
@@ -47,11 +44,7 @@ const noActiveImages = async (req, res) => {
             success: true,
         })
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: 'Internal server error',
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 const deleteMany = async (req, res) => {
@@ -97,10 +90,7 @@ const deleteMany = async (req, res) => {
             success: true,
         })
     } catch (error) {
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 const deleteOne = async (req, res) => {
@@ -108,10 +98,7 @@ const deleteOne = async (req, res) => {
         const img = await Image.findById(req.params.id)
 
         if (!img) {
-            return res.status(404).json({
-                message: 'Image not found',
-                success: false,
-            })
+            return notFound(res, 'Image')
         }
 
         fs.unlinkSync(`./uploads/${img.name}`)
@@ -120,15 +107,9 @@ const deleteOne = async (req, res) => {
 
         await Image.findByIdAndDelete(img.id)
 
-        return res.status(200).json({
-            message: 'Image deleted successfully',
-            success: true,
-        })
+        deleted(res, 'Image')
     } catch (error) {
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 
@@ -155,10 +136,7 @@ const totalMemorySize = async (req, res) => {
             total_images: imagesCount,
         })
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: 'Internal server error',
-        })
+        return errorHandler(res, error)
     }
 }
 

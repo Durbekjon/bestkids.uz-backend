@@ -2,6 +2,7 @@ import User from '../models/User.js'
 import Image from '../models/Image.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
+import { errorHandler, notFound } from './responsController.js'
 
 const register = async (req, res) => {
     try {
@@ -41,11 +42,7 @@ const register = async (req, res) => {
 
         return res.status(200).json(response)
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-        })
+        errorHandler(res, error)
     }
 }
 
@@ -64,10 +61,7 @@ const login = async (req, res) => {
             (await User.findOne({ phone })) || (await User.findOne({ email }))
 
         if (!user) {
-            return res.status(404).json({
-                message: 'User not found',
-                success: false,
-            })
+            return notFound(res, 'User')
         }
 
         const passwordMatches = await bcrypt.compare(password, user.password)
@@ -100,11 +94,7 @@ const login = async (req, res) => {
 
         return res.status(200).json(response)
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-        })
+        errorHandler(res, error)
     }
 }
 

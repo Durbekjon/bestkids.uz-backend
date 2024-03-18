@@ -1,5 +1,12 @@
 import Team from '../models/Team.js'
-
+import errorHandler from './errorController.js'
+import {
+    created,
+    deleted,
+    get,
+    notFound,
+    updated,
+} from './responsController.js'
 const create = async (req, res) => {
     try {
         const { user, role } = req.body
@@ -14,17 +21,9 @@ const create = async (req, res) => {
         const newTeamMember = new Team({ user, role })
         const savedTeamMember = await newTeamMember.save()
 
-        return res.status(201).json({
-            message: 'New team member created successfully',
-            data: savedTeamMember,
-            success: true,
-        })
+        return created(res, 'New team member', savedTeamMember)
     } catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            message: 'Internal Server Error',
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 
@@ -34,17 +33,9 @@ const getAll = async (req, res) => {
             .populate('user', 'name social image')
             .exec()
 
-        return res.status(200).json({
-            message: 'Team members retrieved successfully',
-            data: team,
-            success: true,
-        })
+        return get(res, 'Team members', team)
     } catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            message: 'Internal Server Error',
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 
@@ -62,23 +53,12 @@ const getOne = async (req, res) => {
         const member = await Team.findById(memberId).populate('user').exec()
 
         if (!member) {
-            return res.status(404).json({
-                message: 'Member not found',
-                success: false,
-            })
+            return notFound(res, 'Member')
         }
 
-        return res.status(200).json({
-            message: 'Member retrieved successfully',
-            data: member,
-            success: true,
-        })
+        return get(res, 'Member', member)
     } catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            message: 'Internal Server Error',
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 
@@ -101,23 +81,12 @@ const update = async (req, res) => {
         )
 
         if (!updatedMember) {
-            return res.status(404).json({
-                message: 'Member not found',
-                success: false,
-            })
+            return notFound(res, 'Member')
         }
 
-        return res.status(200).json({
-            message: 'Member updated successfully',
-            data: updatedMember,
-            success: true,
-        })
+        return updated(res, 'Member', updatedMember)
     } catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            message: 'Internal Server Error',
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 
@@ -135,22 +104,12 @@ const deleteMember = async (req, res) => {
         const deletedMember = await Team.findByIdAndDelete(memberId)
 
         if (!deletedMember) {
-            return res.status(404).json({
-                message: 'Member not found',
-                success: false,
-            })
+            return notFound(res, 'Member')
         }
 
-        return res.status(200).json({
-            message: 'Member deleted successfully',
-            success: true,
-        })
+        return deleted(res, 'Member')
     } catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            message: 'Internal Server Error',
-            success: false,
-        })
+        return errorHandler(res, error)
     }
 }
 
