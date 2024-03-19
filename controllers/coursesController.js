@@ -1,4 +1,5 @@
 import Course from '../models/Course.js'
+import Image from '../models/Image.js'
 import {
     errorHandler,
     created,
@@ -8,6 +9,7 @@ import {
     updated,
     deleted,
 } from './responsController.js'
+
 const create = async (req, res) => {
     try {
         const {
@@ -42,6 +44,11 @@ const create = async (req, res) => {
             about_img,
             about_description,
             advantages,
+        })
+        const images = [...class_img, ...method_img, ...about_img]
+
+        images.map((id) => {
+            Image.findByIdAndUpdate(id, { for: 'course' })
         })
 
         await newCourse.save()

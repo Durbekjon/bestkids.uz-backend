@@ -117,4 +117,6 @@ const deleteOne = async (req, res) => {
     }
 }
 
+
+
 export { create, getAll, getOne, update, deleteOne }
