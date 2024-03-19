@@ -12,6 +12,7 @@ app.use(cors('*'))
 
 import cloudinaryImgRouter from './services/upload/cloudinary/imageRoute.js'
 import awsImgRouter from './services/upload/aws/imageRoute.js'
+import categoryRoute from './routes/categoriesRoute.js'
 import feedbackRoute from './routes/feedbackRoute.js'
 import programRoute from './routes/programRoute.js'
 import imageRouter from './routes/imageRoute.js'
@@ -21,6 +22,7 @@ import teamRouter from './routes/teamRoute.js'
 app.use('/api/cloudinary-image', cloudinaryImgRouter)
 app.use('/api/aws-image', awsImgRouter)
 app.use('/api/feedback', feedbackRoute)
+app.use('/api/category', categoryRoute)
 app.use('/api/program', programRoute)
 app.use('/api/image', imageRouter)
 app.use('/api/team', teamRouter)
