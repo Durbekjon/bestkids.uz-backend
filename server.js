@@ -15,10 +15,11 @@ import awsImgRouter from './services/upload/aws/imageRoute.js'
 import categoryRouter from './routes/categoriesRoute.js'
 import feedbackRouter from './routes/feedbackRoute.js'
 import programRouter from './routes/programRoute.js'
+import courseRouter from './routes/coursesRoute.js'
 import imageRouter from './routes/imageRoute.js'
+import classRouter from './routes/classRoute.js'
 import authRouter from './routes/authRoute.js'
 import teamRouter from './routes/teamRoute.js'
-import courseRouter from './routes/coursesRoute.js'
 
 app.use('/api/cloudinary-image', cloudinaryImgRouter)
 app.use('/api/feedback', feedbackRouter)
@@ -27,9 +28,9 @@ app.use('/api/aws-image', awsImgRouter)
 app.use('/api/program', programRouter)
 app.use('/api/course', courseRouter)
 app.use('/api/image', imageRouter)
+app.use('/api/class', classRouter)
 app.use('/api/team', teamRouter)
 app.use('/api/auth', authRouter)
-
 const port = process.env.PORT || 3000
 
 app.listen(port, () => {
