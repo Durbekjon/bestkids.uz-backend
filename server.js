@@ -2,7 +2,7 @@ import connect from './config/dbConfig.js'
 import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
-
+import client from './config/redisConfig.js'
 dotenv.config()
 const app = express()
 
@@ -28,5 +28,6 @@ const port = process.env.PORT || 3000
 
 app.listen(port, () => {
     connect()
+    client
     console.log('Sevrer listening on http://localhost:' + port)
 })

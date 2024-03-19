@@ -1,6 +1,6 @@
 import Team from '../models/Team.js'
-import errorHandler from './errorController.js'
 import {
+    bad,
     created,
     deleted,
     get,
@@ -12,10 +12,7 @@ const create = async (req, res) => {
         const { user, role } = req.body
 
         if (!user || !role) {
-            return res.status(400).json({
-                message: 'User and role are required fields',
-                success: false,
-            })
+            return bad(res, 'User and role are')
         }
 
         const newTeamMember = new Team({ user, role })
@@ -44,10 +41,7 @@ const getOne = async (req, res) => {
         const memberId = req.params.id
 
         if (!memberId) {
-            return res.status(400).json({
-                message: 'Member ID is required',
-                success: false,
-            })
+            return bad(res, 'Member ID')
         }
 
         const member = await Team.findById(memberId).populate('user').exec()
@@ -68,10 +62,7 @@ const update = async (req, res) => {
         const { user, role } = req.body
 
         if (!memberId || !user || !role) {
-            return res.status(400).json({
-                message: 'Member ID, user, and role are required fields',
-                success: false,
-            })
+            return bad(res, 'Member ID , user and role are')
         }
 
         const updatedMember = await Team.findByIdAndUpdate(
@@ -95,10 +86,7 @@ const deleteMember = async (req, res) => {
         const memberId = req.params.id
 
         if (!memberId) {
-            return res.status(400).json({
-                message: 'Member ID is required',
-                success: false,
-            })
+            return bad(res, 'Member ID')
         }
 
         const deletedMember = await Team.findByIdAndDelete(memberId)

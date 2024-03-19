@@ -42,5 +42,26 @@ const errorHandler = (res, error) => {
         success: false,
     })
 }
+const defaultRes = (res, status, message) => {
+    return res.status(status).json({
+        message,
+        success: false,
+    })
+}
 
-export { created, updated, get, deleted, notFound, errorHandler }
+const bad = (res, fields) => {
+    return res.status(403).json({
+        message: `${fields} required`,
+    })
+}
+
+export {
+    created,
+    updated,
+    get,
+    deleted,
+    notFound,
+    errorHandler,
+    defaultRes,
+    bad,
+}

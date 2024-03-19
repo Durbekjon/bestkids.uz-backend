@@ -1,5 +1,4 @@
 import Program from '../models/Programs.js'
-import errorHandler from './errorController.js'
 import { created, get, notFound, updated } from './responsController.js'
 const create = async (req, res) => {
     try {

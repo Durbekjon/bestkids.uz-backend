@@ -5,7 +5,9 @@ const authMiddleware = (req, res, next) => {
         const token = req.headers.authorization
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
         const userId = decodedToken.userId
+
         req.body.userId = userId
+        req.body.role = decodedToken.role
         next()
     } catch (error) {
         res.status(401).send({

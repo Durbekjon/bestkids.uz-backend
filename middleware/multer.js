@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename)
 
 // Storage configuration function
 const storage = (dir) => {
-    const dirPath = path.join(__dirname, 'uploads', dir)
+    const dirPath = path.join(__dirname, '..', 'uploads', dir)
 
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true })
