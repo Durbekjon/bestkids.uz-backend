@@ -15,6 +15,7 @@ import awsImgRouter from './services/upload/aws/imageRoute.js'
 import categoryRouter from './routes/categoriesRoute.js'
 import feedbackRouter from './routes/feedbackRoute.js'
 import programRouter from './routes/programRoute.js'
+import commentRouter from './routes/commentRoute.js'
 import courseRouter from './routes/coursesRoute.js'
 import imageRouter from './routes/imageRoute.js'
 import classRouter from './routes/classRoute.js'
@@ -27,6 +28,7 @@ app.use('/api/feedback', feedbackRouter)
 app.use('/api/category', categoryRouter)
 app.use('/api/aws-image', awsImgRouter)
 app.use('/api/program', programRouter)
+app.use('/api/comment', commentRouter)
 app.use('/api/course', courseRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/class', classRouter)

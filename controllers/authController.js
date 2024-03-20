@@ -62,7 +62,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { phone, password } = req.body
+        const { phone, email, password } = req.body
 
         if (!phone || !password) {
             return bad(res, 'Phone,  and password are')
