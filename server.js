@@ -20,6 +20,7 @@ import imageRouter from './routes/imageRoute.js'
 import classRouter from './routes/classRoute.js'
 import authRouter from './routes/authRoute.js'
 import teamRouter from './routes/teamRoute.js'
+import newsRoute from './routes/newsRoute.js'
 
 app.use('/api/cloudinary-image', cloudinaryImgRouter)
 app.use('/api/feedback', feedbackRouter)
@@ -31,6 +32,8 @@ app.use('/api/image', imageRouter)
 app.use('/api/class', classRouter)
 app.use('/api/team', teamRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/news', newsRoute)
+
 const port = process.env.PORT || 3000
 
 app.listen(port, () => {
