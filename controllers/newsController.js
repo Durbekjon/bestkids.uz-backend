@@ -38,8 +38,23 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const news = await News.find()
-        return get(res, 'News', news)
+        const newsWithComments = await News.aggregate([
+            {
+                $lookup: {
+                    from: 'comments', // Name of the collection where comments are stored
+                    localField: '_id',
+                    foreignField: 'news',
+                    as: 'comments',
+                },
+            },
+            {
+                $addFields: {
+                    commentCount: { $size: '$comments' }, // Add a field for the number of comments
+                },
+            },
+        ])
+
+        return res.json(newsWithComments)
     } catch (error) {
         return errorHandler(res, error)
     }
